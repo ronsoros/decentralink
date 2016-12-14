@@ -1,0 +1,589 @@
+<html>
+	<head>
+		<title>sor, just sor</title>
+		<!-- peer.min.js js-link cdn peerjs n|or peer.js js-link $. $. -->
+		<script src="peer.js"></script>
+		<meta http-equiv="charset" content="utf8"/>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<script>
+			var peer = 0;
+			var dobj = 0; var dbut = 0;
+			var ptable = [];
+//			var pname = [];
+			var postid = [];var $hot = 0;
+   var $new = 1;
+   var tpl = 0;
+function daytosecs(n) { return n*86400*1000; }
+function gettimeago(mn) {
+ var rets = "";
+ var n = parseInt(mn / 1000);
+ var y = parseInt(n / (86400*365.25));
+ var d = parseInt(n % (86400*365.25) / 86400);
+ var h = parseInt(n % (86400*365.25) % 86400 / 3600);
+ var m = parseInt(n% (86400*365.25) % 86400 % 3600 / 60);
+ var s = parseInt(n% (86400*365.25) % 86400 % 3600 % 60);
+ if ( d > 0 ) {
+ if ( y > 0 ) {
+  rets+=y+" years ";
+ }
+ if(d > 0) {
+  rets +=d+" days ";
+ }
+ } else {
+ if ( h > 0 ) {
+  rets+=h+" hours ";
+ }
+ if ( m > 0 ) {
+  rets+=m+" minutes ";
+ } 
+ }
+ if ( h == 0 ) {
+ rets+=s+" seconds ";
+ }
+ return rets + "ago";
+}
+//if(!localStorage){
+// alert("Fatal Error");
+//}
+function isapplesafari(){
+return navigator.userAgent.indexOf("afari") > -1 && navigator.userAgent.indexOf("iP") > -1;
+}
+//var gat = {};
+function sta(na){
+//return;
+//alert(JSON.stringify(navigator));
+//alert(isapplesafari());
+if( localStorage[na] != undefined && localStorage[na] != null){
+eval(na+" = JSON.parse(localStorage['"+na+"']);");
+}
+}
+function sto(na){
+
+if(isapplesafari()){ return; }
+//alert(localStorag
+//localStorage.setItem("a","/828");
+localStorage[na] = JSON.stringify(eval(na));
+}
+			var nobroadcast = "";
+			var conns = [];
+			var postauthor = [];
+			var posttitle = []; var postdate = [];
+			var postbody = []; var postupvote = [];
+			var postparent = []; var posttags = [];
+			function makeconn(rid) {
+			if (rid == peer.id) { return 0; }
+			var conn = peer.connect(rid);
+			conn.on('open', function(){
+  				conn.send(['burst']); // netburst protocol v1.0
+//				conn.send('you');
+  				conn.on('data', eval("var tmp=function(data){indat(data," + conns.length + ");};tmp")); // this is a horrible hack, thanks javascript!
+			});
+			conns.push(conn);
+			}
+                        function gethif() {
+ var p = window.location.hash.substring(1).split("="); return p;
+}
+			function genid() {
+				return Math.round(Math.random()*999999).toString();
+			}
+			function getpostbyid(a) {
+				return postid.indexOf(a);
+			}
+			function getpostbyname(a) {
+				return posttitle.indexOf(a);
+			}
+			function getpostchildren(a) {
+				var reta = [];
+				for  ( yy = postparent.length; yy > 0; yy-- ) {
+					if ( postparent[yy] == a ) { reta.push(yy); }
+				}
+				return reta;
+			}
+			function addpeer(a) {
+				if ( ! ptable.includes(a) ) {
+					ptable.push(a);
+					makeconn(a);
+					broadcast(['peer',a]);
+				}
+			}
+function mktag(n){
+return "<a href='#tags="+n+"' onClick='stags=\""+n+"\";'>"+n+"</a>"
+}
+function mktaga(a){
+try {
+var rets=mktag(a[0]);
+for (y in a){
+if(y!=0){
+rets+=","+mktag(a[y]);
+}
+}
+return rets;
+} catch (e) {
+return "";
+}
+}
+			function addpeerex(a) {
+				ptable.push(a.peer);
+				broadcast(['peer',a.peer]);
+				return conns.push(a) - 1;
+			}
+			function addpost(id, tags, uptoke,date,parent, title, author, body) {
+				if ( postid.indexOf(id) == -1  ) {
+				console.log("adding: " + id + " " + title + " " + author);
+postdate.push(date); console.log("postid: " + postid);
+				var retx = postid.push(parseInt(id)) - 1; postparent.push(parseInt(parent)); posttitle.push(title); postauthor.push(author); postbody.push(body); posttags.push(tags);postupvote.push(parseInt(uptoke));
+				} else {
+				var retx = postid.indexOf(id);
+				}
+				return retx;
+			}
+//			<button onClick="tpl=$hot;refpost();">Hot</button><button onclick="tpl=$new;refpost();">New</button>
+			function burstpost(conn, id) {
+				conn.send(["post",postid[id],posttags[id],postupvote[id],postdate[id],postparent[id],posttitle[id],postauthor[id],postbody[id]]);
+			}
+			function upv(pid, amt) {
+				upvex(pid, amt, pid);
+			}
+			function upvex(pid, amt, pnt) {
+				postupvote[pid] +=amt;
+				if ( pnt > -1 ) {
+				shpstex(pnt);
+				}
+				refpost();
+				if ( pnt != -1 ) {
+				broadcast(['upv', postid[pid], amt]);
+				}
+			}
+                        function gaddpost(id, tags, uptoke, date,parent, title, author, body){
+				broadcast(["post",id,tags,uptoke,date,parent,title,author,body]);
+				return addpost(id,tags,uptoke,date,parent,title,author,body);
+				refpost();
+      }
+			function faddpost(form) {
+				return gaddpost(genid(),form.tags.value.split(","),1,Date.now(),form.pparent.value,form.title.value,peer.id,form.body.value);
+			}
+var squery = "";
+
+function prpost(y) {
+if ( postupvote[y] == undefined ) { return 'upv'; }
+if ( squery != "" && posttitle[y].indexOf(squery) == -1 ) { return 'squ'; }
+if ( stags != "" && posttags[y].indexOf(stags) == -1) {
+if ( postauthor[y] != stags.substring(1) ) {
+return 'nans';
+}
+}
+if ( parseInt(postparent[y]) != -1 ) { return "pnt"; }
+o("posts").innerHTML += "<lu>" + upbtn(y) +"<b><a href='#post="+postid[y]+"' onClick='showpost(" + y + ")'>" + striphtml(posttitle[y]) + "</a></b><br><font size=-1>by " + mku(postauthor[y]) + " | posted " + gettimeago(Date.now()-postdate[y]) + " | tags: " + posttags[y].toString() + "<br/>" + getpostchildren(postid[y]).length + " comments</font><br/><br/></lu>";
+
+}
+function xplhi(y){
+ var high = 1;
+ for ( n = 0; n < postid.length; n++ ){ // >
+  if(postupvote[y] < postupvote[n] ) { high = 0; } // >
+ }
+ return high;
+}
+function getalltags(){
+	var ttl = [];
+	for (y in postid) {
+		for (n in posttags[y]) { if(!ttl.includes(posttags[y][n])) { ttl.push(posttags[y][n]); } }
+	}
+	return ttl;
+}
+function gettagfreq(){
+		var tagfreq = {};
+		var alltags = getalltags();
+		for ( y in alltags ) {
+			tagfreq[alltags[y]] = 0;
+		}
+		for (y in postid ) {
+		for (n in posttags[y]) { tagfreq[posttags[y]] += 1;  }
+		}
+		var ret = [];
+		for ( y in alltags ) {
+			ret.push(tagfreq[y]);
+		}
+		return ret;
+}
+function hia(aa,y){
+ var high = false;
+ for ( n = 0; n < postid.length; n++ ){ // >
+  if(aa[y] < aa[n] ) { high = true; } // >
+ }
+ return high;
+}
+function gettoptags(n) {
+	var s = "";
+	var alltags = getalltags();
+	var tagfreq = gettagfreq();
+	for (nn in alltags) {
+		if (!hia(tagfreq,nn)) {
+			s += "," + alltags[nn];
+		} else {
+			s = alltags[nn] + "," + s;
+		}
+	}
+	var ret = [];
+	var sa = s.split(',');
+	var ct = 0;
+	for (pq in sa) {
+		if ( sa[pq] == undefined || sa[pq] == null || sa[pq] == "" ) {
+		} else {
+		if ( ct < n ) { // >
+		ret.push(sa[pq]);
+		ct++;
+		}
+		}
+		
+	}
+	return ret;
+}
+function striphtml(str){
+str=str.replace(/<br>/gi, "\n");
+str=str.replace(/<p.*>/gi, "\n");
+str=str.replace(/<a.*href="(.*?)".*>(.*?)<\/a>/gi, " $2 (Link->$1) ");
+str=str.replace(/<(?:.|\s)*?>/g, "");
+return str;
+}
+function hasanyof(arr, avals) {
+	var ret = false;
+	
+}
+			function refpost() {
+if(true){
+	try {
+		broadcast(["PING"]);
+	} catch(e){
+	}
+			o("myid").innerHTML = peer.id;
+
+				sto("postid"); sto("postauthor"); sto("postparent"); sto("ptable");
+				sto("posttags"); sto("posttitle"); sto("postbody"); sto("postupvote"); sto("postdate"); 
+}
+o("subname").innerHTML = stags;
+try {
+if ( stags != "" ) {
+o("aboutinfo").innerHTML = "<font style=text-align:left;display:inline-block;font-size:13px>" + stags + " is a tag for content related to, by, for, and about " + stags + "! Please only post relevant content here, thank you.</font>";
+} else {
+o("aboutinfo").innerHTML = "";
+}
+} catch (e) {
+
+}
+if ( stags != "" && document.newpost.tags.value == "" ) {
+document.newpost.tags.value = stags;
+document.newlink.tags.value = stags;
+}
+var ttl = [];
+				//o = document.getElementById;
+				o("posts").innerHTML = "";
+				var y = 0;
+ if ( tpl == 1 ) {
+				for ( y = postid.length; y > -1; y-- ) { // >
+	prpost(y);
+				}  
+ } else {
+    var xpl = "";
+    for ( y = 0; y < postid.length; y++ ) { // >
+  if ( xplhi(y) == 1 ) { xpl = y + "," + xpl  } else { xpl += y + ","  } 
+}
+var xplx = xpl.split(",");
+   for ( y = 0; y < xplx.length; y++ ){ prpost(xplx[y]);  // >
+//	if(!hasanyof(ttl, posttags[xplx[y]])) { for (n in posttags[xplx[y]]) { ttl.push(posttags[xplx[y]][n]); } }
+//	for (n in posttags[xplx[y]]) { if(!ttl.includes(posttags[xplx[y]][n])) { ttl.push(posttags[xplx[y]][n]); } }
+
+}
+ }
+	ttl = gettoptags(5);
+	o("taglist").innerHTML = "";
+	for ( tag in ttl ) {
+	o("taglist").innerHTML += "<button onclick='stags=\"" + ttl[tag] + "\";window.location=\"#tags=" + ttl[tag] + "\";'>" + ttl[tag] + "</button>";
+	}
+}
+			//}
+function upbtn ( id ) {
+	return upbtnex(id, id);
+}
+function upbtnex (id, pnt){
+ return "<span style='float:left;text-align:center;background:white;z-index:9999'><a style='text-decoration:none' class='upv vb' hrefa='#' onClick='upvex(" + id + ",1, " + pnt + ")'>" + String.fromCharCode(9650) + "</a><br>" + postupvote[id] + "<br><a style='text-decoration:none' hrefa='#' onClick='upvex(" + id + ",-1, " + pnt + ")' class='dwv vb'>" + String.fromCharCode(9660) + "</a></span>";
+}
+			function childposts(y,spnt) {
+				var rets = "";
+				if ( getpostchildren(postid[y]) == [] ) { return; }
+				var vpid = 0; var pc = getpostchildren(postid[y]); for ( idx in pc ) {
+					vpid = pc[idx];
+					var aa = "";
+								if ( getpostchildren(postid[vpid]) != [] ) {
+					console.log(postid[vpid] + " " + getpostchildren(postid[vpid]).length);
+					aa = childposts(vpid,spnt);
+					}
+					rets += "<lu>" + upbtnex(vpid,spnt) + "post by <b>" + mku(postauthor[vpid]) + "</b><br/><span style=font-size:13px>" + striphtml(postbody[vpid]) + "</span><br/><font size=-1><a href='#post=" + postid[spnt] + "' onClick='this.innerHTML=formparent(" + postid[vpid] +","+spnt+");this.onclick=null;'>reply</a> | posted " + gettimeago(Date.now() - postdate[vpid]) + "</font><ul>" + aa + "</ul><br/></lu>";
+				}
+				return rets;
+			}
+function formparent(pid,refa){
+ var rets = "</a>";
+ var id = "frm" + pid;
+ rets+="<form name="+id+">";
+ rets+="<textarea style=width:300px name=body></textarea>";
+ rets+="<input type=hidden name=pparent value="+pid+"><input type=hidden name=title value=-><input type=hidden name=tags value=reply,_reply><br/><input type=button value=Post onClick='faddpost(document."+id+");shpstex(" + refa + ");'>";
+ rets+="</form>";
+ return rets;
+}
+			function shpstex(y) {
+				try {
+				o("postpage").innerHTML = upbtnex(y,y)+  "<h3 style='display:inline'>" + striphtml(posttitle[y]) + "</h3><br><font size=-1>by " + mku(postauthor[y]) + " | tags: " + mktaga(posttags[y])+ " | posted " + gettimeago(Date.now()-postdate[y]) + "</font><div style='font-size:13px;background:#ededed;width:100%;border:1px solid #cccccc;border-radius:5px'>" + striphtml(postbody[y]).replace("\n","<br>") + "</div><br/><br/>" + "Comments:<ul><lu>"+ formparent(postid[y],y) + "</lu>";
+				//font.Consolas.getUsage.winTypeConsole.get(0).console.log(childposts(y,y));
+				o("postpage").innerHTML += childposts(y,y) + "</ul>"
+				} catch(e) { }
+
+		}
+			function showpost(y) {
+				shpstex(y);
+//window.location.hash = "#post="+postid[y];
+				swapv(o("postpage"), dobj);
+			}
+			function indat(data,connid) {
+				try {
+					if ( data[0] == 'peer' ) {
+						addpeer(data[1]);
+					}
+					if ( data[0] == 'post' ) {
+						addpost(data[1], data[2], data[3], data[4], data[5],data[6],data[7],data[8]);
+
+						refpost();
+					}
+					if ( data[0] == 'upv' ) {
+						nobroadcast = connid;
+						upvex(postid.indexOf(data[1]), data[2], -1);
+					}
+					if ( data[0] == 'burst' ) {
+						conns[connid].send(['01', 'bursting away']);
+						for ( yy = 0; yy < postid.length; yy++ ) { // >
+							burstpost(conns[connid],yy);
+						}
+						for ( yy = 0; yy < ptable.length; yy++ ) { // >
+							conns[connid].send(['peer',ptable[yy]]);
+						}
+						conns[connid].send(['02', 'end of burst, nice to meet you!']);
+					}
+				} catch (e) {
+					alert("Fatal Error occurred!")
+				}
+			}
+			function broadcast(dat) {
+				for ( yy = 0; yy < conns.length; yy++ ) { // >
+					conns[yy].send(dat);
+				}
+			}
+			function psetup(nid) {
+			if ( nid == "" && !isapplesafari() ) {
+			if ( localStorage["uname"] != undefined ) {
+			nid = localStorage["uname"];
+			}
+			}
+			if ( nid == "" ) {
+			// <!-- totally untested, i wish peerjs could work on lans -->
+			// <!-- ^ screw that ^ -->
+			peer = new Peer({key: 'p9cgytv9m5cdi'});
+			} else {
+			peer = new Peer(nid,{key: 'p9cgytv9m5cdi'});
+			}
+			peer.on('open', function(id){
+//			o("pgs").value = 40;
+			for ( y in ptable ) {
+				makeconn(ptable[y]);
+			}
+			peer.on('connection', function(conn) {
+				conn.send(['burst']);
+				var id = addpeerex(conn); 
+  				conn.on('data', eval("var tmp=function(data){indat(data," + id + ");};tmp")); // this is a horrible hack, thanks javascript!
+			});
+			});
+			peer.on('error', function(err){
+			//	o("pgs").value = 0;
+			});
+try {
+			makeconn("btstrap");
+} catch(e){}
+			}
+			function swapv(a,b) {
+				for ( c in b ) {
+					b[c].style.display = "none";
+				}
+for ( c in dbut ){ if(dbut[c]!=null){ dbut[c].setAttribute('style',''); } }
+var xx = b.indexOf(a);
+if(xx>-1&&dbut[xx]!=null){
+dbut[xx].setAttribute('style','background: #ffffff;color: #4e77ad;');
+}
+if(a!=undefined&&a!=null){
+				a.style.display = "block";
+}
+			}
+			function dologin() {
+				swapv(document.login, dobj);
+			}
+ function loaded(){
+if(true){
+sta("postid"); sta("postauthor"); sta("posttitle"); sta("postdate");
+sta("postbody"); sta("postupvote"); sta("postparent"); sta("posttags");
+}
+
+//setTimeout(function(){
+/*addpost(999999,['default','intro','welcome'],1,Date.now(),-1,"Welcome to sor, just sor.","sorjustsor","Welcome to sor, just sor!");
+addpost(999995,['default','test'],1,Date.now()-daytosecs(31),-1,"sor just sor test 2","sorjustsor","Welcome to sor, just sor! test 2");
+addpost(999998,[],1,Date.now(),999999,"","sorjustsor","test comment");
+addpost(999997,[],1,Date.now(),999999,"","sorjustsor","test comment 2");
+addpost(999996,[],1,Date.now(),999998,"","sorjustsor","test comment 3");*/
+addpost(0,['faq','sorjustsor'],100,1451624400*1000,-1,"About Sor, Just Sor.","sorjustsor","Welcome to Sor, Just Sor! Please note we only support the following browsers: Chrome-coated 4.7+, Chrome 40+, Firefox, Chrome for Android, Bowser for iOS. Safari, Edge, and IE users get those browsers.\nAnyway, welcome to Sor, Just Sor, there is no censorship, so feel free to post what you like, it is fully decentralized using WebRTC.\nYou can even download this page and its accompanying peer.js file to use this without the Sor, Just Sor Website!");
+//}, 2500);
+			refpost();
+bafa();
+setInterval(refpost,2000);
+}
+function bafa(){
+var yy = gethif();
+console.log(yy);
+			dobj = [ document.login, document.conn, o("postpage"), document.sett, document.newpost, document.newlink, document.eform ];
+dbut = [ o("dolog"),o("home"), null, o("settings"), o("post"), o("lpost"), null ];
+			document.conn.style.display = "block";
+
+if(document.location.hash.substring(1) != "") {
+swapv(document.eform, dobj);
+}
+if(yy[0]=="post"){
+swapv(document.eform,dobj);
+var func = eval("var aza = function(){showpost(postid.indexOf('" + yy[1].toString() + "'));};aza");
+setTimeout(func,2000);
+}
+if(yy[0]=="search"){
+squery = yy[1];
+//setTimeout(refpost,1000);
+}
+if(yy[0]=="tags"){
+stags = yy[1];
+document.newpost.tags.value = stags;
+}
+if(yy[0]=="user"){
+stags = "@" + yy[1];
+}
+}
+function mku (a) {
+	return "<a href='#user=" + a + "' onClick='stags=\"@" + a + "\";swapv(document.conn,dobj);'>" + a + "</a>";
+}
+//var by = "";
+var stags = "";
+//			var o = document.getElementById;
+			function o(a) { return document.getElementById(a); }
+                        
+		</script>
+		
+	</head>
+	<style>
+		body { background: #fefefe; font-family: Arial; font-size: 14px; }
+		#main { top: 0; left: 0; position: absolute; }
+		#nav td a, #hn a { color:white; }
+		#nav td a:visited, #hn a:visited { color: white; }
+		#nav td button, #nav td input, #hn button, .btn {
+			background: #4e77ad;
+			color: #ffffff;
+			border-top: 1px solid #ffffff; font-family: Arial; font-size:14px; margin-top:2px;
+ padding:0;margin-bottom:0px;border-left: 1px solid #ffffff;border-right: 1px solid #ffffff; border-bottom: 0px none #000000;
+		margin-left:4px;
+		padding: 1px;
+		}
+		.vb {
+			color: #cccccc;
+		}
+		.upv:hover {
+			color: #ff4500;
+		}
+		.dwv:hover {
+			color: #5f99cf;
+		}
+		button[class="bhover"] {
+			background: #ffffff;border-bottom: 1px solid #ffffff;
+			color: #4e77ad;
+		}
+	</style>
+	<body onLoad='loaded();psetup("");'>
+		<table id='main' name='main' style='width:100%;height:100%' cellspacing=0 cellpadding=0>
+		<tr style='height:32px; background: #cee3f8;' >
+			<td valign=bottom><h1 style="display:inline">sor</h1>beta</td>
+			<td valign=bottom style=text-align:right;padding-bottom:2px;padding-right:2px><button class=btn size-comt=8 style='foant-family:monospace' type="button" no=disabled id="myid">Loading...</button><button id="settings" class=btn onclick="swapv(document.sett, dobj)">Options</button><button class=btn id=dolog onClick='dologin();'>Login/Register</button>
+</td>
+		</tr>
+		<tr style='height: 17px; background: #4e77ad' id='nav' name='nav'>
+			<td colspan=2><b>
+<span style=float:right><input id=search> <button onclick="squery=o('search').value;refpost();swapv(document.conn,dobj);window.location='#search='+o('search').value">Search</button></span><button onClick='swapv(document.conn,dobj);window.location="#";squery="";stags="";refpost();' class=bhover id=home>All</button>
+<span id=taglist></span>
+<!--<button onClick="tpl=$hot;refpost();">Hot</button><button onclick="tpl=$new;refpost();">New</button>-->
+</td> 
+		</tr>
+		<tr style="height:100%;margin-top:1px">
+		<td valign="top">
+		
+		<form name="newpost" style="display:none">
+			<table style='width:100%'>
+				<tr>
+					<td>Title</td><td><input type=text name=title></td>
+				</tr>
+				<tr>
+					<td>Tags</td><td><input type=text name=tags><br/>Seperate by commas</td>
+				</tr>
+				<tr>
+					<td></td><td><textarea name=body style='width: 100%;height:300px;'></textarea></td>
+				</tr>
+			</table>
+				<button type=button onClick='var p = faddpost(document.newpost);showpost(p)'>Post</button>
+				<input type=hidden name=pparent value=-1>
+		</form>
+		<form name="newlink" style="display:none">
+			<table style='width:100%'>
+				<tr>
+					<td>Title</td><td><input type=text name=title></td>
+				</tr>
+				<tr>
+					<td>Tags</td><td><input type=text name=tags><br/>Seperate by commas</td>
+				</tr>
+				<tr>
+					<td>URL</td><td><input name=body type=url></td>
+				</tr>
+			</table>
+				<button type=button onClick='var p = faddpost(document.newlink);showpost(p)'>Post</button>
+				<input type=hidden name=pparent value=-1>
+		</form>
+		<form name="login" style="display:none">
+<br/>
+			Username: <input type="text" name="uname"><br/>
+			<input type="button" value="Login" onClick="peer.destroy(); psetup(document.login.uname.value); swapv(document.conn,dobj); localStorage['uname'] = document.login.uname.value;">
+		</form>
+		<form name="sett" style="display:none">
+		<br/>
+<fieldset><legend>Advanced</legend>
+		Manually Add Peer: <input type="text" name="remotepeer"> <input type=button value="Connect" onClick="addpeer(document.sett.remotepeer.value)">
+		<br/><button type=button onClick="localStorage.clear();window.location.reload();">Reset DHT</button></fieldset>
+		</form>
+		<form name="eform" style=display:none><b>Loading...</b></form>
+		<form name="conn">
+<div id=hn style="background:#4e77ad;border-top:1px solid #ffffff;">
+	<button type=button onClick="tpl=$hot;refpost();">Hot</button><button type=button onclick="tpl=$new;refpost();">New</button></div><br/>
+		<ul id="posts">
+		</ul>
+		</form>
+		<div id="postpage" style=display:none></div>
+		</td>
+		<td style='width:250px;text-align:right' valign=top>
+			<span style='display:inline-block;width:100%;background:#4e77ad;border-top:1px solid #ffffff;'>
+			<button id="post" class='btn' onclick="swapv(document.newpost,dobj)">Submit Text</button>
+			<button id="lpost" class='btn' onclick="swapv(document.newlink,dobj)">Submit Link</button>
+			</span>
+			<h2 id='subname'>all</h2>
+			<hr/>
+			<div id='aboutinfo'></div>
+		</td>
+		</tr>
+		<tr><td style="text-align:center" colspan=2>sor, just sor (C) 2016 sor internet.</td></tr>
+		</table>
+	</body>
+</html>
