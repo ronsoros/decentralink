@@ -385,9 +385,9 @@ function formparent(pid,refa){
 			if ( nid == "" ) {
 			// <!-- totally untested, i wish peerjs could work on lans -->
 			// <!-- ^ screw that ^ -->
-			peer = new Peer({key: 'p9cgytv9m5cdi', secure: true});
+			peer = new Peer({key: 'p9cgytv9m5cdi'});
 			} else {
-			peer = new Peer(nid,{key: 'p9cgytv9m5cdi', secure: true});
+			peer = new Peer(nid,{key: 'p9cgytv9m5cdi'});
 			}
 			peer.on('open', function(id){
 //			o("pgs").value = 40;
