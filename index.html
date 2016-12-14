@@ -46,7 +46,7 @@ function gettimeago(mn) {
 // alert("Fatal Error");
 //}
 function isapplesafari(){
-return navigator.userAgent.indexOf("afari") > -1 && navigator.userAgent.indexOf("iP") > -1;
+return 0;
 }
 //var gat = {};
 function sta(na){
@@ -385,9 +385,9 @@ function formparent(pid,refa){
 			if ( nid == "" ) {
 			// <!-- totally untested, i wish peerjs could work on lans -->
 			// <!-- ^ screw that ^ -->
-			peer = new Peer({key: 'p9cgytv9m5cdi'});
+			peer = new Peer({key: 'p9cgytv9m5cdi', secure: true});
 			} else {
-			peer = new Peer(nid,{key: 'p9cgytv9m5cdi'});
+			peer = new Peer(nid,{key: 'p9cgytv9m5cdi', secure: true});
 			}
 			peer.on('open', function(id){
 //			o("pgs").value = 40;
